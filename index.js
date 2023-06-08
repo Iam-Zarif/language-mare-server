@@ -1,7 +1,8 @@
 const express = require("express");
 const cors = require('cors');
 const app = express();
-require("dotenv").config()
+require("dotenv").config();
+const stripe = require("stripe")(process.env.SECRET_PAYMENT_KEY);
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -42,6 +43,8 @@ app.get("/classes" , async(req,res) =>{
     const result = await classesCollection.find().toArray();
     res.send(result);
 })
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log(

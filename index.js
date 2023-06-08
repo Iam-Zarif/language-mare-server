@@ -35,7 +35,7 @@ async function run() {
 const usersCollection = client.db("Mare").collection("users");
 const classesCollection = client.db("Mare").collection("popular-classes");
 
-app.get("/instructors" , async(req,res) =>{
+app.get("/users" , async(req,res) =>{
     const result  =await usersCollection.find().toArray();
     res.send(result);
 })
@@ -43,8 +43,31 @@ app.get("/classes" , async(req,res) =>{
     const result = await classesCollection.find().toArray();
     res.send(result);
 })
+app.post("/users" , async (req,res) =>{
+  const user = req.body;
+  console.log(user);
+  const query = {email :user.email};
+  const existUser = await usersCollection.findOne(query);
+  console.log("Existing user" ,existUser)
+  if(existUser){
+    return res.send({message : "User already sexist"})
+  }
+  const result = await usersCollection.insertOne(user);
+  res.send(result)
+})
 
-
+app.post("/create-payment-intend" ,async(req,res) =>{
+  const {price} = req.body;
+  const amount = price*100;
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount:amount,
+    currency :"usd",
+    payment_method_types : ["card"]
+  });
+  res.send({
+    clientSecret : paymentIntent.client_secret
+  })
+})
 
     await client.db("admin").command({ ping: 1 });
     console.log(

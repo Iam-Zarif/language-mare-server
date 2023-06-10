@@ -64,6 +64,7 @@ async function run() {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
+
     app.get("/classes", async (req, res) => {
       const result = await classesCollection.find().toArray();
       res.send(result);
@@ -85,11 +86,31 @@ app.get("/instructor", async (req, res) => {
   }
 });
 
+// 
+// 
+
+app.get("/approvedClasses", async (req, res) => {
+  try {
+    const instructor = await classesCollection
+      .find({ status: "approve" })
+      .toArray();
+    res.json(instructor);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 
+// 
+
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
 // 
 // 
+
+
 // 
 
 
@@ -124,6 +145,8 @@ app.listen(3000, () => {
       if(!user.email){
         res.send([])
       }
+
+      
       // const decodedEmail = req.decoded.email;
       // if(email !== decodedEmail){
       //   return res.status(403).send({error:true , message:"Forbidden Access"})
@@ -139,6 +162,29 @@ app.listen(3000, () => {
       res.send(result);
     });
    
+
+
+
+    // 
+    // 
+    app.put("/all/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+
+      const classes = req.body;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          status: classes.status,
+        },
+      };
+      const result = await classesCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
 
 
 // 
@@ -177,6 +223,13 @@ app.post("/classes" , async(req,res) =>{
 const user = await classesCollection.insertOne(classes);
 res.send(user);
 })
+
+app.get("/myClasses",verifyJWT, async (req, res) => {
+  // const email = req.query.email;
+  // const query = { email: email };
+  const result = await classesCollection.find().toArray();
+  res.send(result);
+});
 
     app.post("/create-payment-intend", async (req, res) => {
       const { price } = req.body;

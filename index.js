@@ -172,6 +172,12 @@ app.get("/user/instructor/:email", verifyJWT, async (req, res) => {
 
 
 
+app.post("/classes" , async(req,res) =>{
+  const classes = req.body;
+const user = await classesCollection.insertOne(classes);
+res.send(user);
+})
+
     app.post("/create-payment-intend", async (req, res) => {
       const { price } = req.body;
       const amount = price * 100;

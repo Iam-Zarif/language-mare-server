@@ -51,28 +51,40 @@ async function run() {
 
     const usersCollection = client.db("Mare").collection("users");
     const classesCollection = client.db("Mare").collection("popular-classes");
-    const selectedClassesCollection = client.db("Mare").collection("selected-classes");
+    const selectedClassesCollection = client
+      .db("Mare")
+      .collection("selected-classes");
 
-app.post("/selectedClasses", async (req, res) => {
-  const classes = req.body;
-  const user = await selectedClassesCollection.insertOne(classes);
-  res.send(user);
-});
- 
+    app.post("/selectedClasses", async (req, res) => {
+      const classes = req.body;
+      const user = await selectedClassesCollection.insertOne(classes);
+      res.send(user);
+    });
 
-app.get("/selectedClasses",  async (req, res) => {
-  const result = await selectedClassesCollection.find().toArray();
-  res.send(result);
-});
+    // ...
+
+  app.delete("/selectedClasses/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await selectedClassesCollection.deleteOne(query);
+    res.send(result);
+  });
 
 
-    app.post("/jwt" , (req,res) =>{
+    // ...
+
+    app.get("/selectedClasses", async (req, res) => {
+      const result = await selectedClassesCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/jwt", (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "10h",
       });
-      res.send({token})
-    })
+      res.send({ token });
+    });
     app.get("/users", verifyJWT, async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
@@ -83,53 +95,47 @@ app.get("/selectedClasses",  async (req, res) => {
       res.send(result);
     });
 
-// 
-// 
-// 
+    //
+    //
+    //
 
-app.get("/instructor", async (req, res) => {
-  try {
-    const instructor = await usersCollection
-      .find({ role: "instructor" })
-      .toArray();
-    res.json(instructor);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+    app.get("/instructor", async (req, res) => {
+      try {
+        const instructor = await usersCollection
+          .find({ role: "instructor" })
+          .toArray();
+        res.json(instructor);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
 
-// 
-// 
+    //
+    //
 
-app.get("/approvedClasses", async (req, res) => {
-  try {
-    const instructor = await classesCollection
-      .find({ status: "approve" })
-      .toArray();
-    res.json(instructor);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+    app.get("/approvedClasses", async (req, res) => {
+      try {
+        const instructor = await classesCollection
+          .find({ status: "approve" })
+          .toArray();
+        res.json(instructor);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
 
-// 
-// 
+    //
+    //
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
-});
-// 
-// 
+    app.listen(3000, () => {
+      console.log("Server is running on port 3000");
+    });
+    //
+    //
 
-
-// 
-
-
-
-
-
+    //
 
     app.patch("/users/admin/:id", async (req, res) => {
       const id = req.params.id;
@@ -139,8 +145,8 @@ app.listen(3000, () => {
           role: "admin",
         },
       };
-      const result = await usersCollection.updateOne(filter,updateDoc);
-      res.send(result)
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
     });
     app.patch("/users/instructor/:id", async (req, res) => {
       const id = req.params.id;
@@ -150,16 +156,15 @@ app.listen(3000, () => {
           role: "instructor",
         },
       };
-      const result = await usersCollection.updateOne(filter,updateDoc);
-      res.send(result)
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
     });
     app.post("/users", async (req, res) => {
       const user = req.body;
-      if(!user.email){
-        res.send([])
+      if (!user.email) {
+        res.send([]);
       }
 
-      
       // const decodedEmail = req.decoded.email;
       // if(email !== decodedEmail){
       //   return res.status(403).send({error:true , message:"Forbidden Access"})
@@ -174,12 +179,9 @@ app.listen(3000, () => {
       const result = await usersCollection.insertOne(user);
       res.send(result);
     });
-   
 
-
-
-    // 
-    // 
+    //
+    //
     app.put("/all/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -199,51 +201,47 @@ app.listen(3000, () => {
       res.send(result);
     });
 
+    //
+    //
 
-// 
-  //  
+    app.get("/user/admin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      if (req.decoded.email !== email) {
+        res.send({ admin: false });
+      }
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      const result = user?.role === "admin";
 
-app.get("/user/admin/:email", verifyJWT, async (req, res) => {
-  const email = req.params.email;
-  if (req.decoded.email !== email) {
-    res.send({ admin: false });
-  }
-  const query = { email: email };
-  const user = await usersCollection.findOne(query);
-  const result =   user?.role === "admin" ;
+      res.send(result);
+    });
+    app.get("/user/instructor/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      if (req.decoded.email !== email) {
+        res.send({ instructor: false });
+      }
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      const result = user?.role === "instructor";
 
-  res.send(result);
-});
-app.get("/user/instructor/:email", verifyJWT, async (req, res) => {
-  const email = req.params.email;
-  if (req.decoded.email !== email) {
-    res.send({ instructor: false });
-  }
-  const query = { email: email };
-  const user = await usersCollection.findOne(query);
-  const result = user?.role === "instructor"; ;
+      res.send(result);
+    });
 
-  res.send(result);
-});
+    //
+    //
 
-// 
-// 
+    app.post("/classes", async (req, res) => {
+      const classes = req.body;
+      const user = await classesCollection.insertOne(classes);
+      res.send(user);
+    });
 
+    app.get("/myClasses", verifyJWT, async (req, res) => {
+      const result = await classesCollection.find().toArray();
+      res.send(result);
+    });
 
-
-app.post("/classes" , async(req,res) =>{
-  const classes = req.body;
-const user = await classesCollection.insertOne(classes);
-res.send(user);
-})
-
-app.get("/myClasses",verifyJWT, async (req, res) => {
-  
-  const result = await classesCollection.find().toArray();
-  res.send(result);
-});
-
-    app.post("/create-payment-intend", async (req, res) => {
+    app.post("/create-payment-intend",verifyJWT, async (req, res) => {
       const { price } = req.body;
       const amount = price * 100;
       const paymentIntent = await stripe.paymentIntents.create({

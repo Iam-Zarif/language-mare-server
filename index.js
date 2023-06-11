@@ -51,6 +51,19 @@ async function run() {
 
     const usersCollection = client.db("Mare").collection("users");
     const classesCollection = client.db("Mare").collection("popular-classes");
+    const selectedClassesCollection = client.db("Mare").collection("selected-classes");
+
+app.post("/selectedClasses", async (req, res) => {
+  const classes = req.body;
+  const user = await selectedClassesCollection.insertOne(classes);
+  res.send(user);
+});
+ 
+
+app.get("/selectedClasses",  async (req, res) => {
+  const result = await selectedClassesCollection.find().toArray();
+  res.send(result);
+});
 
 
     app.post("/jwt" , (req,res) =>{
@@ -225,8 +238,7 @@ res.send(user);
 })
 
 app.get("/myClasses",verifyJWT, async (req, res) => {
-  // const email = req.query.email;
-  // const query = { email: email };
+  
   const result = await classesCollection.find().toArray();
   res.send(result);
 });

@@ -64,15 +64,15 @@ async function run() {
     });
 
     // ...
+    // Class delete
+    app.delete("/selectedClasses/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await selectedClassesCollection.deleteOne(query);
+      res.send(result);
+    });
 
-  app.delete("/selectedClasses/:id", async (req, res) => {
-    const id = req.params.id;
-    const query = { _id: new ObjectId(id) };
-    const result = await selectedClassesCollection.deleteOne(query);
-    res.send(result);
-  });
-
-
+    // Class delete
     // ...
 
     app.get("/selectedClasses", async (req, res) => {
@@ -243,7 +243,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/create-payment-intend",verifyJWT, async (req, res) => {
+    app.post("/create-payment-intend", verifyJWT, async (req, res) => {
       const { price } = req.body;
       const amount = price * 100;
       const paymentIntent = await stripe.paymentIntents.create({
